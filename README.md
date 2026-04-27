@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Pokedex Lite
 
-## Getting Started
+A responsive Pokedex-style web app built with **Next.js (App Router) + TypeScript** using **PokéAPI**.
 
-First, run the development server:
+### Features
+
+- **SSR**: Server-rendered first page for fast initial load
+- **List**: Responsive grid with Pokémon name, image, and types
+- **Search**: Instant filtering by name (as you type)
+- **Type filter**: Multi-select type filtering (intersection)
+- **Pagination**: Next/Prev paging (no “fetch all”)
+- **Favorites**: Persisted to `localStorage`
+- **Detail view**: Animated modal with stats + abilities
+- **OAuth (bonus)**: NextAuth proof-of-concept (GitHub/Google providers, optional)
+- **Animations (bonus)**: Hover + modal transitions via Framer Motion
+
+## Getting started (local)
+
+Install deps and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## OAuth (bonus) setup (optional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+OAuth is implemented via **NextAuth**, but providers are **enabled only if env vars are present**.
+There is also a **Demo** credentials provider so the auth UI works out of the box.
 
-## Learn More
+1) Copy env template:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.example .env.local
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2) Fill one provider (GitHub or Google) + set a secret:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **GitHub**: `GITHUB_ID`, `GITHUB_SECRET`
+- **Google**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- **NextAuth**: `NEXTAUTH_SECRET` (required)
 
-## Deploy on Vercel
+Then restart `npm run dev`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm start
+```
+
+## Deploy (optional)
+
+- **Vercel**: import the repo in Vercel, set any desired env vars from `.env.example`, and deploy.
+
+## Tech choices
+
+- **Next.js App Router**: SSR-friendly, clean routing + API routes
+- **Tailwind CSS**: fast iteration for responsive UI
+- **Framer Motion**: subtle UI motion and modal transitions
+- **NextAuth**: minimal OAuth proof-of-concept
+- **PokéAPI**: public data source
+
+## Notes / challenges
+
+- **Type filtering**: PokéAPI’s main list endpoint doesn’t include types, so the app fetches details for the current page and uses the `/type/{type}` endpoint for type-based browsing with pagination.
