@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, LogIn, LogOut, Search, Star, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
@@ -35,6 +36,7 @@ export function PokedexClient({
   pageSize?: number;
 }) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [offset, setOffset] = React.useState(0);
   const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
   const [search, setSearch] = React.useState("");
@@ -127,7 +129,7 @@ export function PokedexClient({
                 ) : (
                   <button
                     type="button"
-                    onClick={() => signIn()}
+                    onClick={() => router.push("/signin")}
                     className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm"
                   >
                     <LogIn className="h-4 w-4" />
@@ -212,7 +214,7 @@ export function PokedexClient({
                   ) : (
                     <button
                       type="button"
-                      onClick={() => signIn()}
+                      onClick={() => router.push("/signin")}
                       className="inline-flex h-11 items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white shadow-sm"
                     >
                       <LogIn className="h-4 w-4" />

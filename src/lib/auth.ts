@@ -1,21 +1,9 @@
 import type { NextAuthOptions } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    Credentials({
-      name: "Demo",
-      credentials: {
-        name: { label: "Name", type: "text", placeholder: "Ash Ketchum" },
-      },
-      async authorize(credentials) {
-        const name = credentials?.name?.trim();
-        if (!name) return null;
-        return { id: `demo:${name}`, name };
-      },
-    }),
     ...(process.env.GITHUB_ID && process.env.GITHUB_SECRET
       ? [
           GitHub({
@@ -35,7 +23,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/",
+    signIn: "/signin",
   },
 };
 
