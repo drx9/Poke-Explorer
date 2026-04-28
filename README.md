@@ -25,10 +25,6 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## OAuth (bonus) setup (optional)
-
-OAuth is implemented via **NextAuth**, but providers are **enabled only if env vars are present**.
-There is also a **Demo** credentials provider so the auth UI works out of the box.
 
 1) Copy env template:
 
@@ -36,10 +32,9 @@ There is also a **Demo** credentials provider so the auth UI works out of the bo
 cp .env.example .env.local
 ```
 
-2) Fill one provider (GitHub or Google) + set a secret:
+2) Fill GitHub  + set a secret:
 
 - **GitHub**: `GITHUB_ID`, `GITHUB_SECRET`
-- **Google**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - **NextAuth**: `NEXTAUTH_SECRET` (required)
 
 Then restart `npm run dev`.
@@ -51,9 +46,6 @@ npm run build
 npm start
 ```
 
-## Deploy (optional)
-
-- **Vercel**: import the repo in Vercel, set any desired env vars from `.env.example`, and deploy.
 
 ## Tech choices
 
