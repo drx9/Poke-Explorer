@@ -54,3 +54,13 @@ npm start
 - **Framer Motion**: subtle UI motion and modal transitions
 - **NextAuth**: minimal OAuth proof-of-concept
 - **PokéAPI**: public data source
+
+## Challenges Faced & Solutions
+
+**1. Implementing Global Search with a Paginated API**
+*Challenge:* The PokéAPI does not have a native "search by partial string across all Pokémon" endpoint. Initially, the app only searched within the currently visible page of 20 Pokémon.
+*Solution:* I updated the backend to fetch a lightweight index of all Pokémon (`?limit=10000`), filter them by name on the server, and then correctly slice and paginate those results before fetching their full details. To prevent spamming the API, I implemented a 300ms "debounce" delay on the client-side search input.
+
+**2. Missing Brand Icons in Modern Icon Libraries**
+*Challenge:* While setting up GitHub authentication on the sign-in page, the `lucide-react` library threw a build error because they recently removed all brand logos (like GitHub) from their package.
+*Solution:* Rather than installing a heavy secondary icon library just for one logo, I created a custom, lightweight inline SVG component (`GithubIcon`) that perfectly matches the existing UI style.
