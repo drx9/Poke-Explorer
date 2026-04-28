@@ -54,7 +54,3 @@ npm start
 - **Framer Motion**: subtle UI motion and modal transitions
 - **NextAuth**: minimal OAuth proof-of-concept
 - **PokéAPI**: public data source
-
-## Notes / challenges
-
-- **Type filtering**: PokéAPI’s main list endpoint doesn’t include types, so the app fetches details for the current page and uses the `/type/{type}` endpoint for type-based browsing with pagination.
