@@ -27,6 +27,7 @@ function officialArtworkUrl(id: number) {
 }
 
 async function pokeFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // console.log("fetching path:", path); // debug temp
   const res = await fetch(`${POKEAPI_BASE}${path}`, {
     ...init,
     headers: {
@@ -37,10 +38,13 @@ async function pokeFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
+    // throw new Error("bad req"); 
     throw new Error(`PokéAPI request failed: ${res.status} ${res.statusText}`);
   }
 
-  return (await res.json()) as T;
+  const rawData = await res.json();
+  // TODO: add proper zod validation later, for now just cast it
+  return rawData as T;
 }
 
 type PokeListResponse = {
@@ -120,21 +124,32 @@ export async function getPokemonPage(params: {
   offset: number;
   limit: number;
   types?: string[];
+  search?: string;
 }): Promise<PokemonPageResult> {
-  const { offset, limit, types } = params;
+  const { offset, limit, types, search } = params;
   const selectedTypes = (types ?? []).filter(Boolean);
+  const q = search?.trim().toLowerCase() || "";
+
+  let allNames: string[] = [];
 
   if (selectedTypes.length > 0) {
-    const allNames = await getPokemonNamesForTypes(selectedTypes);
-    const pageNames = allNames.slice(offset, offset + limit);
+    allNames = await getPokemonNamesForTypes(selectedTypes);
+    if (q) {
+      allNames = allNames.filter((name) => name.includes(q));
+    }
+  } else if (q) {
+    const list = await pokeFetch<PokeListResponse>("/pokemon?limit=10000");
+    allNames = list.results.map((r) => r.name).filter((name) => name.includes(q));
+  } else {
+    const list = await pokeFetch<PokeListResponse>(`/pokemon?offset=${offset}&limit=${limit}`);
+    const pageNames = list.results.map((r) => r.name);
     const items = await getPokemonListItemsByName(pageNames);
-    return { items, total: allNames.length };
+    return { items, total: list.count };
   }
 
-  const list = await pokeFetch<PokeListResponse>(`/pokemon?offset=${offset}&limit=${limit}`);
-  const pageNames = list.results.map((r) => r.name);
+  const pageNames = allNames.slice(offset, offset + limit);
   const items = await getPokemonListItemsByName(pageNames);
-  return { items, total: list.count };
+  return { items, total: allNames.length };
 }
 
 export async function getPokemonDetail(name: string) {

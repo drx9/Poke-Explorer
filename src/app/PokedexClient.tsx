@@ -14,11 +14,12 @@ import { PokeballMark } from "@/components/PokeballMark";
 
 type PageData = { items: PokemonListItem[]; total: number };
 
-async function fetchPage(params: { offset: number; limit: number; types: string[] }): Promise<PageData> {
+async function fetchPage(params: { offset: number; limit: number; types: string[]; search?: string }): Promise<PageData> {
   const sp = new URLSearchParams();
   sp.set("offset", String(params.offset));
   sp.set("limit", String(params.limit));
   if (params.types.length > 0) sp.set("types", params.types.join(","));
+  if (params.search) sp.set("search", params.search);
 
   const res = await fetch(`/api/pokemon?${sp.toString()}`);
   const data = (await res.json()) as PageData | { error: string };
@@ -58,21 +59,23 @@ export function PokedexClient({
   const maxOffset = Math.max(0, Math.floor((data.total - 1) / pageSize) * pageSize);
 
   const filteredItems = React.useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let items = data.items;
-    if (q) items = items.filter((p) => p.name.toLowerCase().includes(q));
-    if (onlyFavorites) items = items.filter((p) => favoritesSet.has(p.name));
-    return items;
-  }, [data.items, favoritesSet, onlyFavorites, search]);
+    let tempItems = data.items;
+    // only show favorites if the star toggle is on
+    if (onlyFavorites) {
+        tempItems = tempItems.filter((p) => favoritesSet.has(p.name));
+    }
+    return tempItems;
+  }, [data.items, favoritesSet, onlyFavorites]);
 
   const hasPrev = offset > 0;
   const hasNext = offset < maxOffset;
 
-  async function refetch(next: { offset: number; types: string[] }) {
+  async function refetch(next: { offset: number; types: string[]; search: string }) {
+    // console.log("REFETCHING", next);
     setLoading(true);
     setError(null);
     try {
-      const page = await fetchPage({ offset: next.offset, limit: pageSize, types: next.types });
+      const page = await fetchPage({ offset: next.offset, limit: pageSize, types: next.types, search: next.search });
       setData(page);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load Pokémon");
@@ -81,10 +84,30 @@ export function PokedexClient({
     }
   }
 
+  const [debouncedSearch, setDebouncedSearch] = React.useState(search);
+
+  React.useEffect(() => {
+    // debounce hack - don't touch unless it breaks
+    const timer = setTimeout(() => {
+        setDebouncedSearch(search);
+    }, 300);
+    return () => { clearTimeout(timer) };
+  }, [search]);
+
+  const isFirstMount = React.useRef(true);
+  React.useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    setOffset(0);
+    void refetch({ offset: 0, types: selectedTypes, search: debouncedSearch });
+  }, [debouncedSearch]);
+
   function setTypesAndReset(nextTypes: string[]) {
     setSelectedTypes(nextTypes);
     setOffset(0);
-    void refetch({ offset: 0, types: nextTypes });
+    void refetch({ offset: 0, types: nextTypes, search: debouncedSearch });
   }
 
   function toggleFavorite(name: string) {
@@ -246,7 +269,7 @@ export function PokedexClient({
                   if (!hasPrev) return;
                   const nextOffset = Math.max(0, offset - pageSize);
                   setOffset(nextOffset);
-                  void refetch({ offset: nextOffset, types: selectedTypes });
+                  void refetch({ offset: nextOffset, types: selectedTypes, search: debouncedSearch });
                 }}
                 disabled={!hasPrev || loading}
                 className={cn(
@@ -264,7 +287,7 @@ export function PokedexClient({
                   if (!hasNext) return;
                   const nextOffset = Math.min(maxOffset, offset + pageSize);
                   setOffset(nextOffset);
-                  void refetch({ offset: nextOffset, types: selectedTypes });
+                  void refetch({ offset: nextOffset, types: selectedTypes, search: debouncedSearch });
                 }}
                 disabled={!hasNext || loading}
                 className={cn(
